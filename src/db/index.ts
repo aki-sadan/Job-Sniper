@@ -1,0 +1,12 @@
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import * as schema from "./schema";
+import path from "path";
+
+// Use a local SQLite file in the project root
+const dbPath = path.join(process.cwd(), "career-sniper.db");
+
+const sqlite = new Database(dbPath);
+sqlite.pragma("journal_mode = WAL");
+
+export const db = drizzle(sqlite, { schema });

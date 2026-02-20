@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Gemütliches Grün-Theme */
+  --background: #f8faf9;
+  --foreground: #1e3a2e;
+  --primary: #2d5f4d;
+  --primary-light: #3d7a62;
+  --primary-dark: #1e4738;
+  --accent: #7eb89a;
+  --accent-light: #a8d5ba;
+  --warm-bg: #f4f7f5;
+  --card-bg: #ffffff;
+  --border: #d4e5dc;
+}
+
+body {
+  color: var(--foreground);
+  background: linear-gradient(135deg, #f8faf9 0%, #e8f5ee 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .bg-size-200 {
+    background-size: 200%;
+  }
+
+  .bg-pos-0 {
+    background-position: 0% 50%;
+  }
+
+  .bg-pos-100 {
+    background-position: 100% 50%;
+  }
+
+  .animate-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
