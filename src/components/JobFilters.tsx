@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import CityAutocomplete from "@/components/CityAutocomplete";
 
 interface JobFiltersProps {
   onFilterChange: (filters: FilterState) => void;
@@ -161,12 +162,10 @@ export default function JobFilters({ onFilterChange }: JobFiltersProps) {
             <label className="block text-sm font-medium text-primary mb-2">
               Stadt/Region
             </label>
-            <input
-              type="text"
-              placeholder="z.B. Frankfurt, Berlin..."
+            <CityAutocomplete
               value={filters.location}
-              onChange={(e) => updateFilter("location", e.target.value)}
-              className="w-full px-4 py-2.5 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder-primary/40 transition-all"
+              onChange={(val) => updateFilter("location", val)}
+              placeholder="z.B. Frankfurt, Berlin..."
             />
           </div>
 

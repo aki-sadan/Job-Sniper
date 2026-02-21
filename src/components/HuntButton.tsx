@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { startHunting } from "@/app/actions";
 import { useRouter } from "next/navigation";
+import CityAutocomplete from "@/components/CityAutocomplete";
 
 export default function HuntButton() {
   const [isPending, startTransition] = useTransition();
@@ -97,14 +98,13 @@ export default function HuntButton() {
           </div>
           <div>
             <label className="block text-xs text-primary/60 mb-1">Stadt/Region</label>
-            <input
-              type="text"
+            <CityAutocomplete
               name="location"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg bg-white border border-border text-foreground placeholder-primary/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="z.B. Frankfurt, Berlin"
+              onChange={setLocation}
+              country={country}
               disabled={isPending || isRemote}
+              placeholder="z.B. Frankfurt, Berlin"
             />
           </div>
         </div>
