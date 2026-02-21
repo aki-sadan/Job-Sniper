@@ -98,7 +98,7 @@ export default function JobSwipeCard({
           {/* Description */}
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Description
+              Beschreibung
             </h3>
             <p className="text-gray-700 text-base leading-relaxed">
               {job.description}
@@ -109,14 +109,14 @@ export default function JobSwipeCard({
           {hasReport && (
             <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
               <h3 className="text-lg font-bold text-black mb-4">
-                🔍 Investigation Report
+                🔍 Analyse-Bericht
               </h3>
 
               <div className="space-y-4">
                 {/* Sentiment */}
                 <div>
                   <span className="text-sm font-semibold text-gray-600">
-                    Sentiment:{" "}
+                    Stimmung:{" "}
                   </span>
                   <span
                     className={`text-sm font-bold ${
@@ -135,7 +135,7 @@ export default function JobSwipeCard({
                 {report.redFlags && report.redFlags.length > 0 && (
                   <div>
                     <div className="text-sm font-semibold text-gray-600 mb-2">
-                      ⚠️ Red Flags:
+                      ⚠️ Warnzeichen:
                     </div>
                     <ul className="space-y-2">
                       {report.redFlags.slice(0, 3).map((flag, idx) => (
@@ -154,7 +154,7 @@ export default function JobSwipeCard({
                 {report.culturalInsights && report.culturalInsights.length > 0 && (
                   <div>
                     <div className="text-sm font-semibold text-gray-600 mb-2">
-                      💼 Cultural Insights:
+                      💼 Kultur-Einblicke:
                     </div>
                     <ul className="space-y-2">
                       {report.culturalInsights.slice(0, 2).map((insight, idx) => (
@@ -176,13 +176,13 @@ export default function JobSwipeCard({
           {!hasReport && (
             <div className="bg-gray-50 rounded-2xl p-6 border-2 border-dashed border-gray-300 text-center">
               <p className="text-gray-600 mb-4">
-                No investigation report yet. Tap below to investigate!
+                Noch kein Analyse-Bericht vorhanden. Jetzt analysieren!
               </p>
               <button
                 onClick={() => onInvestigate(job.id)}
                 className="px-6 py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition-colors"
               >
-                🔍 Investigate Now
+                🔍 Jetzt analysieren
               </button>
             </div>
           )}
@@ -193,16 +193,16 @@ export default function JobSwipeCard({
           <div className="flex items-center justify-between text-center">
             <div className="flex-1">
               <div className="text-3xl mb-1">👈</div>
-              <div className="text-xs font-semibold text-red-600">REJECT</div>
+              <div className="text-xs font-semibold text-red-600">ABLEHNEN</div>
             </div>
             <div className="flex-1">
               <div className="text-xs text-gray-500 font-medium">
-                Swipe or use buttons
+                Wischen oder Buttons nutzen
               </div>
             </div>
             <div className="flex-1">
               <div className="text-3xl mb-1">👉</div>
-              <div className="text-xs font-semibold text-green-600">ACCEPT</div>
+              <div className="text-xs font-semibold text-green-600">ANNEHMEN</div>
             </div>
           </div>
         </div>

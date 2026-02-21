@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Career Sniper - AI Job Agent",
-  description: "Your personal Job Hunting OS",
+  title: "Career Sniper - KI-Jobagent",
+  description: "Dein persönliches Job-Hunting-System mit KI",
 };
 
 export default function RootLayout({

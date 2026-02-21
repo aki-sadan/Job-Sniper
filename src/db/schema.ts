@@ -15,13 +15,19 @@ export const jobs = sqliteTable("jobs", {
   jobType: text("job_type", {
     enum: ["vollzeit", "teilzeit", "werkstudent", "praktikum"],
   }), // Job-Typ
-  source: text("source"), // 'bundesagentur', 'arbeitnow', 'adzuna', 'remotive', 'jobicy'
+  source: text("source"), // 'bundesagentur', 'arbeitnow', 'adzuna', 'remotive', 'jobicy', 'jobspy-linkedin', 'jobspy-indeed', 'jobspy-google'
   detectiveReport: text("detective_report", { mode: "json" }).$type<{
     sentiment?: string;
     redFlags?: string[];
     redFlagScore?: number;
     interviewQuestions?: string[];
     culturalInsights?: string[];
+  }>(),
+  matchScore: text("match_score", { mode: "json" }).$type<{
+    score: number;
+    matchedSkills: string[];
+    missingSkills: string[];
+    recommendations: string[];
   }>(),
   status: text("status", {
     enum: ["new", "rejected", "shortlisted", "applied"],
@@ -33,5 +39,20 @@ export const jobs = sqliteTable("jobs", {
     .default(sql`(unixepoch())`),
 });
 
+export const resume = sqliteTable("resume", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  content: text("content").notNull(),
+  fileName: text("file_name"),
+  skills: text("skills", { mode: "json" }).$type<string[]>(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
+
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = typeof jobs.$inferInsert;
+export type Resume = typeof resume.$inferSelect;
+export type NewResume = typeof resume.$inferInsert;

@@ -16,7 +16,7 @@ export default function HuntButton() {
 
   const handleHunt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setStatus("🎯 Starting hunt...");
+    setStatus("🎯 Suche läuft...");
 
     const formData = new FormData(e.currentTarget);
 
@@ -59,7 +59,7 @@ export default function HuntButton() {
       {/* Role */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-primary">
-          Role
+          Position
         </label>
         <input
           type="text"
@@ -67,7 +67,7 @@ export default function HuntButton() {
           value={role}
           onChange={(e) => setRole(e.target.value)}
           className="w-full px-4 py-2.5 rounded-lg bg-white border border-border text-foreground placeholder-primary/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-          placeholder="e.g. AI Engineer"
+          placeholder="z.B. AI Engineer"
           disabled={isPending}
         />
       </div>
@@ -103,7 +103,7 @@ export default function HuntButton() {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="w-full px-4 py-2.5 rounded-lg bg-white border border-border text-foreground placeholder-primary/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="e.g. Frankfurt, Berlin"
+              placeholder="z.B. Frankfurt, Berlin"
               disabled={isPending || isRemote}
             />
           </div>
@@ -156,7 +156,7 @@ export default function HuntButton() {
         disabled={isPending}
         className="w-full px-6 py-3 bg-gradient-to-r from-primary to-primary-light text-white font-medium rounded-lg hover:from-primary-dark hover:to-primary shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
-        {isPending ? "Searching..." : "🎯 Search Jobs"}
+        {isPending ? "Suche läuft..." : "🎯 Jobs suchen"}
       </button>
 
       {status && (

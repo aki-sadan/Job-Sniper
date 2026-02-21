@@ -1,16 +1,20 @@
 "use client";
 
 import { Job } from "@/db/schema";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { matchAllJobs } from "@/app/actions";
+import { useRouter } from "next/navigation";
 import JobCard from "./JobCard";
 import JobSwipeView from "./JobSwipeView";
 import JobFilters, { FilterState } from "./JobFilters";
 
 interface JobsListProps {
   jobs: Job[];
+  hasResume?: boolean;
 }
 
 type ViewMode = "list" | "swipe";
+type SortMode = "date" | "match";
 
 const defaultFilters: FilterState = {
   search: "",
@@ -20,11 +24,17 @@ const defaultFilters: FilterState = {
   jobTypes: [],
   location: "",
   source: [],
+  minMatchScore: 0,
 };
 
-export default function JobsList({ jobs }: JobsListProps) {
+export default function JobsList({ jobs, hasResume }: JobsListProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [sortMode, setSortMode] = useState<SortMode>("date");
   const [advancedFilters, setAdvancedFilters] = useState<FilterState>(defaultFilters);
+  const [isMatchingAll, setIsMatchingAll] = useState(false);
+  const [matchStatus, setMatchStatus] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   // Apply all filters
   let filteredJobs = jobs;
@@ -82,6 +92,43 @@ export default function JobsList({ jobs }: JobsListProps) {
     );
   }
 
+  // Min Match Score
+  if (advancedFilters.minMatchScore > 0) {
+    filteredJobs = filteredJobs.filter((job) => {
+      const ms = job.matchScore as { score: number } | null;
+      return ms && ms.score >= advancedFilters.minMatchScore;
+    });
+  }
+
+  // Sortierung
+  if (sortMode === "match") {
+    filteredJobs = [...filteredJobs].sort((a, b) => {
+      const scoreA = (a.matchScore as { score: number } | null)?.score ?? -1;
+      const scoreB = (b.matchScore as { score: number } | null)?.score ?? -1;
+      return scoreB - scoreA;
+    });
+  }
+
+  const handleMatchAll = () => {
+    setIsMatchingAll(true);
+    setMatchStatus("Matching läuft...");
+
+    startTransition(async () => {
+      const result = await matchAllJobs();
+
+      if (result.success) {
+        const r = result as { success: true; matchedCount: number; totalJobs: number };
+        setMatchStatus(`${r.matchedCount} von ${r.totalJobs} Jobs gematcht!`);
+        router.refresh();
+        setTimeout(() => setMatchStatus(""), 5000);
+      } else {
+        setMatchStatus(`Fehler: ${result.error}`);
+      }
+
+      setIsMatchingAll(false);
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "new":
@@ -109,7 +156,7 @@ export default function JobsList({ jobs }: JobsListProps) {
           Keine Jobs
         </h3>
         <p className="text-gray-500">
-          Klicke &quot;Search Jobs&quot; um Stellenangebote zu finden
+          Klicke &quot;Jobs suchen&quot; um Stellenangebote zu finden
         </p>
       </div>
     );
@@ -131,26 +178,46 @@ export default function JobsList({ jobs }: JobsListProps) {
 
   const handleTabClick = (statusId: string) => {
     if (statusId === "all") {
-      // Reset status filter
       setAdvancedFilters((prev) => ({ ...prev, status: [] }));
     } else {
-      // Toggle einzelner Status
       const current = advancedFilters.status;
       const updated = current.includes(statusId)
         ? current.filter((s) => s !== statusId)
-        : [statusId]; // Nur einen Status gleichzeitig über Tabs
+        : [statusId];
       setAdvancedFilters((prev) => ({ ...prev, status: updated }));
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* View Mode Toggle */}
-      <div className="flex items-center justify-between bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+      {/* View Mode Toggle + Sort + Match All */}
+      <div className="flex items-center justify-between flex-wrap gap-4 bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
         <h2 className="text-lg font-semibold text-black">
           Ansicht
         </h2>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Sortierung */}
+          <select
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as SortMode)}
+            className="px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 border-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="date">Nach Datum</option>
+            <option value="match">Nach Match-Score</option>
+          </select>
+
+          {/* Alle matchen Button */}
+          {hasResume && (
+            <button
+              onClick={handleMatchAll}
+              disabled={isPending || isMatchingAll}
+              className="px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-primary to-primary-light text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {isMatchingAll ? "Matcht..." : "Alle matchen"}
+            </button>
+          )}
+
+          {/* View Buttons */}
           <button
             onClick={() => setViewMode("list")}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -173,6 +240,13 @@ export default function JobsList({ jobs }: JobsListProps) {
           </button>
         </div>
       </div>
+
+      {/* Match Status */}
+      {matchStatus && (
+        <div className="p-3 bg-accent-light/20 rounded-lg border border-accent-light">
+          <p className="text-primary text-sm">{matchStatus}</p>
+        </div>
+      )}
 
       {/* Filters */}
       <JobFilters onFilterChange={setAdvancedFilters} />
@@ -216,6 +290,7 @@ export default function JobsList({ jobs }: JobsListProps) {
                 key={job.id}
                 job={job}
                 statusColor={getStatusColor(job.status)}
+                hasResume={hasResume}
               />
             ))}
           </div>

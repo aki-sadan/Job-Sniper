@@ -51,57 +51,64 @@ export async function generateApplication(
     redFlagScore?: number;
     interviewQuestions?: string[];
     culturalInsights?: string[];
-  }
+  },
+  userResume?: string
 ): Promise<ApplicationPackage> {
   try {
-    console.log(`📝 Closer Agent: Generating application for ${company}...`);
+    console.log(`📝 Closer Agent: Erstelle Bewerbung für ${company}...`);
 
-    // Load Master CV
-    const masterCVPath = path.join(process.cwd(), "data", "Master_CV.md");
     let masterCV: string;
 
-    try {
-      masterCV = await fs.readFile(masterCVPath, "utf-8");
-      console.log("✅ Master CV loaded");
-    } catch {
-      console.error("❌ Master CV not found, using placeholder");
-      masterCV = "# Master CV\n\nPlease add your Master_CV.md file to the /data folder.";
+    if (userResume) {
+      // Benutzer-Lebenslauf verwenden
+      masterCV = userResume;
+      console.log("✅ Benutzer-Lebenslauf wird verwendet");
+    } else {
+      // Master CV aus Datei laden
+      const masterCVPath = path.join(process.cwd(), "data", "Master_CV.md");
+      try {
+        masterCV = await fs.readFile(masterCVPath, "utf-8");
+        console.log("✅ Master CV geladen");
+      } catch {
+        console.error("❌ Master CV nicht gefunden, verwende Platzhalter");
+        masterCV = "# Master-Lebenslauf\n\nBitte füge deine Master_CV.md Datei in den /data Ordner ein.";
+      }
     }
 
     // Prepare detective insights for context
     const detectiveContext = detectiveReport
       ? `
-DETECTIVE INSIGHTS:
-- Overall Sentiment: ${detectiveReport.sentiment || "Unknown"}
-- Red Flag Score: ${detectiveReport.redFlagScore || "N/A"}/10
-- Cultural Insights: ${detectiveReport.culturalInsights?.join(", ") || "None"}
-- Potential Interview Questions: ${detectiveReport.interviewQuestions?.join(", ") || "None"}
+ANALYSE-ERKENNTNISSE:
+- Gesamtstimmung: ${detectiveReport.sentiment || "Unbekannt"}
+- Warnzeichen-Score: ${detectiveReport.redFlagScore || "N/A"}/10
+- Kultur-Einblicke: ${detectiveReport.culturalInsights?.join(", ") || "Keine"}
+- Mögliche Interviewfragen: ${detectiveReport.interviewQuestions?.join(", ") || "Keine"}
 `
-      : "No detective report available.";
+      : "Kein Analyse-Bericht verfügbar.";
 
     // 1. Generate Tailored CV
     console.log("🎯 Generating tailored CV...");
-    const cvPrompt = `You are a professional CV writer. Create a tailored CV based on the master CV and job description.
+    const cvPrompt = `Du bist ein professioneller Lebenslauf-Autor. Erstelle einen maßgeschneiderten Lebenslauf basierend auf dem Master-Lebenslauf und der Stellenbeschreibung. Antworte auf Deutsch.
 
-MASTER CV:
+MASTER-LEBENSLAUF:
 ${masterCV}
 
-JOB POSTING:
-Company: ${company}
+STELLENANZEIGE:
+Unternehmen: ${company}
 Position: ${jobTitle}
-Description: ${jobDescription}
+Beschreibung: ${jobDescription}
 
 ${detectiveContext}
 
-TASK:
-1. Analyze the job description and identify key requirements
-2. Re-order and emphasize relevant skills and experiences from the master CV
-3. Add or modify bullet points to match job keywords (but stay truthful)
-4. Keep the same structure but optimize for this specific role
-5. Remove or minimize irrelevant experiences
-6. Ensure the CV is ATS-friendly with relevant keywords
+AUFGABE:
+1. Analysiere die Stellenbeschreibung und identifiziere die Kernanforderungen
+2. Ordne relevante Fähigkeiten und Erfahrungen aus dem Master-Lebenslauf neu und betone sie
+3. Füge Stichpunkte hinzu oder passe sie an, um Job-Keywords zu treffen (aber bleibe wahrheitsgemäß)
+4. Behalte die gleiche Struktur bei, aber optimiere für diese spezifische Rolle
+5. Entferne oder minimiere irrelevante Erfahrungen
+6. Stelle sicher, dass der Lebenslauf ATS-freundlich ist mit relevanten Keywords
 
-Return ONLY the tailored CV in markdown format, ready to use.`;
+Gib NUR den angepassten Lebenslauf im Markdown-Format zurück, fertig zur Verwendung.`;
 
     const tailoredCV = await generateWithFallback(cvPrompt, 0.4);
 
@@ -109,33 +116,33 @@ Return ONLY the tailored CV in markdown format, ready to use.`;
 
     // 2. Generate Cover Letter
     console.log("✉️ Generating cover letter...");
-    const coverLetterPrompt = `You are a professional application writer. Create a compelling cover letter.
+    const coverLetterPrompt = `Du bist ein professioneller Bewerbungsschreiber. Erstelle ein überzeugendes Anschreiben auf Deutsch.
 
-MASTER CV (for context):
+MASTER-LEBENSLAUF (als Kontext):
 ${masterCV}
 
-JOB POSTING:
-Company: ${company}
+STELLENANZEIGE:
+Unternehmen: ${company}
 Position: ${jobTitle}
-Description: ${jobDescription}
+Beschreibung: ${jobDescription}
 
 ${detectiveContext}
 
-TASK:
-1. Write a personalized cover letter that shows genuine interest
-2. Mention specific cultural insights or facts about the company if available from detective report
-3. Highlight relevant achievements from the CV that match job requirements
-4. Address potential red flags positively if any (e.g., "I read about your focus on work-life balance...")
-5. Keep it concise (max 300 words)
-6. Use professional but authentic tone
-7. Include a strong closing with call to action
+AUFGABE:
+1. Schreibe ein personalisiertes Anschreiben, das echtes Interesse zeigt
+2. Erwähne spezifische kulturelle Einblicke oder Fakten über das Unternehmen, falls aus dem Analyse-Bericht verfügbar
+3. Hebe relevante Erfolge aus dem Lebenslauf hervor, die zu den Jobanforderungen passen
+4. Gehe positiv auf mögliche Warnzeichen ein (z.B. "Ich habe von Ihrem Fokus auf Work-Life-Balance gelesen...")
+5. Halte es prägnant (max. 300 Wörter)
+6. Verwende einen professionellen aber authentischen Ton
+7. Schließe mit einem starken Abschluss und Handlungsaufforderung ab
 
 Format:
-- Use German if company is German, otherwise English
-- Standard business letter format
-- Ready to send
+- Auf Deutsch schreiben
+- Standard-Geschäftsbrief-Format
+- Versandfertig
 
-Return ONLY the cover letter text.`;
+Gib NUR den Anschreiben-Text zurück.`;
 
     const coverLetter = await generateWithFallback(coverLetterPrompt, 0.5);
 
@@ -143,32 +150,32 @@ Return ONLY the cover letter text.`;
 
     // 3. Generate Email Draft
     console.log("📧 Generating email draft...");
-    const emailPrompt = `You are crafting a professional application email.
+    const emailPrompt = `Du erstellst eine professionelle Bewerbungs-E-Mail auf Deutsch.
 
-CONTEXT:
-Company: ${company}
+KONTEXT:
+Unternehmen: ${company}
 Position: ${jobTitle}
-Job Description: ${jobDescription}
+Stellenbeschreibung: ${jobDescription}
 
 ${detectiveContext}
 
-TASK:
-Write a short, professional email to accompany the CV and cover letter.
+AUFGABE:
+Schreibe eine kurze, professionelle E-Mail zur Begleitung von Lebenslauf und Anschreiben.
 
-REQUIREMENTS:
-1. Subject line (clear and professional)
-2. Brief introduction (2-3 sentences)
-3. Mention attached documents
-4. Express enthusiasm
-5. Professional closing
-6. Use German if company is German, otherwise English
+ANFORDERUNGEN:
+1. Betreffzeile (klar und professionell)
+2. Kurze Einleitung (2-3 Sätze)
+3. Angehängte Dokumente erwähnen
+4. Begeisterung ausdrücken
+5. Professioneller Abschluss
+6. Auf Deutsch schreiben
 
 Format:
-Subject: [Your subject line]
+Betreff: [Deine Betreffzeile]
 
-[Email body]
+[E-Mail-Text]
 
-Return ONLY the email in the format above.`;
+Gib NUR die E-Mail im obigen Format zurück.`;
 
     const emailDraft = await generateWithFallback(emailPrompt, 0.5);
 

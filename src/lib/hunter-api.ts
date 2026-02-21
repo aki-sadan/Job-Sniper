@@ -7,6 +7,7 @@ import { searchArbeitnow } from "./api-clients/arbeitnow";
 import { searchAdzuna } from "./api-clients/adzuna";
 import { searchRemotive } from "./api-clients/remotive";
 import { searchJobicy } from "./api-clients/jobicy";
+import { searchJobSpy } from "./api-clients/jobspy";
 
 export interface HuntResult {
   success: boolean;
@@ -49,6 +50,8 @@ export async function huntJobsAPI(
       searchArbeitnow(params),
       // Optional: Adzuna (nur wenn API-Keys vorhanden)
       searchAdzuna(params),
+      // JobSpy: LinkedIn, Indeed, Google Jobs
+      searchJobSpy(params),
     ];
 
     // Bei Remote-Suche: zusätzlich Remotive + Jobicy

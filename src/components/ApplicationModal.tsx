@@ -25,7 +25,7 @@ export default function ApplicationModal({
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    alert(`${label} copied to clipboard!`);
+    alert(`${label} in die Zwischenablage kopiert!`);
   };
 
   return (
@@ -36,10 +36,10 @@ export default function ApplicationModal({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white">
-                Application Package
+                Bewerbungspaket
               </h2>
               <p className="text-purple-200 text-sm mt-1">
-                Generated for: <span className="font-semibold">{company}</span>
+                Erstellt für: <span className="font-semibold">{company}</span>
               </p>
             </div>
             <button
@@ -60,7 +60,7 @@ export default function ApplicationModal({
                   : "bg-white/10 text-purple-200 hover:bg-white/20"
               }`}
             >
-              📄 Tailored CV
+              📄 Lebenslauf
             </button>
             <button
               onClick={() => setActiveTab("cover")}
@@ -70,7 +70,7 @@ export default function ApplicationModal({
                   : "bg-white/10 text-purple-200 hover:bg-white/20"
               }`}
             >
-              ✉️ Cover Letter
+              ✉️ Anschreiben
             </button>
             <button
               onClick={() => setActiveTab("email")}
@@ -80,7 +80,7 @@ export default function ApplicationModal({
                   : "bg-white/10 text-purple-200 hover:bg-white/20"
               }`}
             >
-              📧 Email Draft
+              📧 E-Mail-Entwurf
             </button>
           </div>
         </div>
@@ -92,15 +92,15 @@ export default function ApplicationModal({
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-purple-300">
-                    Tailored CV
+                    Angepasster Lebenslauf
                   </h3>
                   <button
                     onClick={() =>
-                      copyToClipboard(application.tailoredCV, "CV")
+                      copyToClipboard(application.tailoredCV, "Lebenslauf")
                     }
                     className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded"
                   >
-                    📋 Copy
+                    📋 Kopieren
                   </button>
                 </div>
                 <pre className="text-purple-100 text-sm whitespace-pre-wrap font-mono">
@@ -113,15 +113,15 @@ export default function ApplicationModal({
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-purple-300">
-                    Cover Letter
+                    Anschreiben
                   </h3>
                   <button
                     onClick={() =>
-                      copyToClipboard(application.coverLetter, "Cover Letter")
+                      copyToClipboard(application.coverLetter, "Anschreiben")
                     }
                     className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded"
                   >
-                    📋 Copy
+                    📋 Kopieren
                   </button>
                 </div>
                 <pre className="text-purple-100 text-sm whitespace-pre-wrap font-mono">
@@ -134,15 +134,15 @@ export default function ApplicationModal({
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-purple-300">
-                    Email Draft
+                    E-Mail-Entwurf
                   </h3>
                   <button
                     onClick={() =>
-                      copyToClipboard(application.emailDraft, "Email Draft")
+                      copyToClipboard(application.emailDraft, "E-Mail-Entwurf")
                     }
                     className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded"
                   >
-                    📋 Copy
+                    📋 Kopieren
                   </button>
                 </div>
                 <pre className="text-purple-100 text-sm whitespace-pre-wrap font-mono">
@@ -157,13 +157,13 @@ export default function ApplicationModal({
         <div className="p-6 border-t border-purple-500/30">
           <div className="flex justify-between items-center">
             <p className="text-purple-300 text-sm">
-              💡 Tip: Review and customize before sending
+              💡 Tipp: Vor dem Versenden nochmal prüfen und anpassen
             </p>
             <button
               onClick={onClose}
               className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg"
             >
-              Close
+              Schließen
             </button>
           </div>
         </div>

@@ -14,6 +14,7 @@ export interface FilterState {
   jobTypes: string[];
   location: string;
   source: string[];
+  minMatchScore: number;
 }
 
 const JOB_TYPE_OPTIONS = [
@@ -29,6 +30,9 @@ const SOURCE_OPTIONS = [
   { value: "adzuna", label: "Adzuna" },
   { value: "remotive", label: "Remotive" },
   { value: "jobicy", label: "Jobicy" },
+  { value: "jobspy-linkedin", label: "LinkedIn" },
+  { value: "jobspy-indeed", label: "Indeed" },
+  { value: "jobspy-google", label: "Google Jobs" },
 ];
 
 const defaultFilters: FilterState = {
@@ -39,6 +43,7 @@ const defaultFilters: FilterState = {
   jobTypes: [],
   location: "",
   source: [],
+  minMatchScore: 0,
 };
 
 export default function JobFilters({ onFilterChange }: JobFiltersProps) {
@@ -106,20 +111,24 @@ export default function JobFilters({ onFilterChange }: JobFiltersProps) {
               : "bg-white border border-border text-primary hover:bg-accent-light/20"
           }`}
         >
-          Remote Only
+          Nur Remote
         </button>
 
-        {["new", "shortlisted", "applied"].map((status) => (
+        {[
+          { value: "new", label: "Neu" },
+          { value: "shortlisted", label: "Vorgemerkt" },
+          { value: "applied", label: "Beworben" },
+        ].map((status) => (
           <button
-            key={status}
-            onClick={() => toggleArrayItem("status", status)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${
-              filters.status.includes(status)
+            key={status.value}
+            onClick={() => toggleArrayItem("status", status.value)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              filters.status.includes(status.value)
                 ? "bg-gradient-to-r from-primary to-primary-light text-white shadow-md"
                 : "bg-white border border-border text-primary hover:bg-accent-light/20"
             }`}
           >
-            {status}
+            {status.label}
           </button>
         ))}
       </div>
@@ -186,7 +195,7 @@ export default function JobFilters({ onFilterChange }: JobFiltersProps) {
           {/* Red Flag Score */}
           <div>
             <label className="block text-sm font-medium text-primary mb-2">
-              Max Red Flags: {filters.redFlagMax}/10
+              Max Warnzeichen: {filters.redFlagMax}/10
             </label>
             <input
               type="range"
@@ -198,8 +207,28 @@ export default function JobFilters({ onFilterChange }: JobFiltersProps) {
               className="w-full h-2 bg-accent-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
             />
             <div className="flex justify-between text-xs text-primary/50 mt-1">
-              <span>0 (Best)</span>
-              <span>10 (Worst)</span>
+              <span>0 (Beste)</span>
+              <span>10 (Schlechteste)</span>
+            </div>
+          </div>
+
+          {/* Min Match Score */}
+          <div>
+            <label className="block text-sm font-medium text-primary mb-2">
+              Min. Match-Score: {filters.minMatchScore}%
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={filters.minMatchScore}
+              onChange={(e) => updateFilter("minMatchScore", parseInt(e.target.value))}
+              className="w-full h-2 bg-accent-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <div className="flex justify-between text-xs text-primary/50 mt-1">
+              <span>0% (Alle)</span>
+              <span>100% (Nur perfekte Matches)</span>
             </div>
           </div>
         </div>

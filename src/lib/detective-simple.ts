@@ -36,33 +36,33 @@ export async function investigateCompanySimple(
 
     // Use AI to analyze based on general knowledge
     // In production, you would add web scraping results here
-    const analysisPrompt = `You are a career consultant analyzing a company for a job seeker.
+    const analysisPrompt = `Du bist ein Karriereberater, der ein Unternehmen für einen Jobsuchenden analysiert. Antworte auf Deutsch.
 
-Company: ${company}
+Unternehmen: ${company}
 Position: ${jobTitle}
 
-Based on your knowledge and common industry patterns, provide a comprehensive analysis.
+Basierend auf deinem Wissen und typischen Branchenmustern, erstelle eine umfassende Analyse.
 
-IMPORTANT: Be realistic and balanced. Consider:
-- Company size and industry reputation
-- Common challenges in this industry
-- Typical interview questions for this role
-- General cultural aspects of companies in this sector
+WICHTIG: Sei realistisch und ausgewogen. Berücksichtige:
+- Unternehmensgröße und Branchenruf
+- Typische Herausforderungen in dieser Branche
+- Häufige Interviewfragen für diese Position
+- Allgemeine kulturelle Aspekte von Unternehmen in diesem Sektor
 
-Provide:
-1. Overall sentiment (Positive/Neutral/Negative)
-2. Potential red flags (be realistic - most companies have some concerns)
-3. Red Flag Score (0-10, where 0 is perfect and 10 is highly toxic) - be moderate, most companies are 3-6
-4. Common interview questions for this type of role
-5. Cultural insights that might be relevant
+Liefere:
+1. Gesamtstimmung (Positiv/Neutral/Negativ)
+2. Mögliche Warnzeichen (sei realistisch - die meisten Unternehmen haben einige Bedenken)
+3. Warnzeichen-Score (0-10, wobei 0 perfekt und 10 hochgradig toxisch ist) - sei moderat, die meisten Unternehmen liegen bei 3-6
+4. Häufige Interviewfragen für diese Art von Position
+5. Kulturelle Einblicke, die relevant sein könnten
 
-Respond in this exact JSON format:
+Antworte in diesem exakten JSON-Format:
 {
-  "sentiment": "Positive/Neutral/Negative",
-  "redFlags": ["flag1", "flag2", ...],
+  "sentiment": "Positiv/Neutral/Negativ",
+  "redFlags": ["warnzeichen1", "warnzeichen2", ...],
   "redFlagScore": 5,
-  "interviewQuestions": ["question1", "question2", ...],
-  "culturalInsights": ["insight1", "insight2", ...]
+  "interviewQuestions": ["frage1", "frage2", ...],
+  "culturalInsights": ["einblick1", "einblick2", ...]
 }`;
 
     // Try models in order until one works
@@ -145,39 +145,39 @@ function getFallbackReport(company: string, jobTitle: string): DetectiveReport {
   // Common interview questions based on role type
   const getInterviewQuestions = (title: string): string[] => {
     const lower = title.toLowerCase();
-    if (lower.includes("engineer") || lower.includes("developer")) {
+    if (lower.includes("engineer") || lower.includes("developer") || lower.includes("entwickler")) {
       return [
-        "Walk me through your technical background and experience",
-        "Describe a challenging project you've worked on",
-        "How do you approach problem-solving?",
-        "What's your experience with [relevant technology]?",
-        "How do you handle tight deadlines?",
+        "Erzählen Sie uns von Ihrem technischen Hintergrund und Ihrer Erfahrung",
+        "Beschreiben Sie ein herausforderndes Projekt, an dem Sie gearbeitet haben",
+        "Wie gehen Sie an Problemlösungen heran?",
+        "Welche Erfahrung haben Sie mit [relevanter Technologie]?",
+        "Wie gehen Sie mit engen Deadlines um?",
       ];
     }
     return [
-      "Tell me about yourself and your background",
-      "Why are you interested in this position?",
-      "Describe your strengths and weaknesses",
-      "Give an example of a challenging situation you've handled",
-      "Where do you see yourself in 5 years?",
+      "Erzählen Sie uns etwas über sich und Ihren Hintergrund",
+      "Warum interessieren Sie sich für diese Position?",
+      "Beschreiben Sie Ihre Stärken und Schwächen",
+      "Nennen Sie ein Beispiel für eine herausfordernde Situation, die Sie gemeistert haben",
+      "Wo sehen Sie sich in 5 Jahren?",
     ];
   };
 
   return {
     sentiment: "Neutral",
     redFlags: [
-      "Limited public information available",
-      "AI analysis temporarily unavailable - conduct your own research",
-      "Verify company details through Glassdoor, LinkedIn, and Kununu",
+      "Begrenzte öffentliche Informationen verfügbar",
+      "KI-Analyse vorübergehend nicht verfügbar - eigene Recherche durchführen",
+      "Unternehmensdetails über Glassdoor, LinkedIn und Kununu prüfen",
     ],
     redFlagScore: 5,
     interviewQuestions: getInterviewQuestions(jobTitle),
     culturalInsights: [
-      "Research company culture through employee reviews",
-      "Check recent news and press releases",
-      "Connect with current/former employees on LinkedIn",
-      "Review company's social media presence",
-      "Investigate work-life balance through Glassdoor",
+      "Unternehmenskultur durch Mitarbeiterbewertungen recherchieren",
+      "Aktuelle Nachrichten und Pressemitteilungen prüfen",
+      "Mit aktuellen/ehemaligen Mitarbeitern auf LinkedIn vernetzen",
+      "Social-Media-Präsenz des Unternehmens prüfen",
+      "Work-Life-Balance über Glassdoor recherchieren",
     ],
   };
 }

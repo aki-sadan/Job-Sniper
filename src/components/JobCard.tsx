@@ -2,13 +2,15 @@
 
 import { Job } from "@/db/schema";
 import { useState, useTransition } from "react";
-import { investigateJob, generateApplicationForJob } from "@/app/actions";
+import { investigateJob, generateApplicationForJob, matchJobWithResume } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import ApplicationModal from "./ApplicationModal";
+import MatchBadge from "./MatchBadge";
 
 interface JobCardProps {
   job: Job;
   statusColor: string;
+  hasResume?: boolean;
 }
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -17,6 +19,9 @@ const SOURCE_COLORS: Record<string, string> = {
   adzuna: "bg-orange-100 text-orange-700 border-orange-200",
   remotive: "bg-purple-100 text-purple-700 border-purple-200",
   jobicy: "bg-pink-100 text-pink-700 border-pink-200",
+  "jobspy-linkedin": "bg-sky-100 text-sky-700 border-sky-200",
+  "jobspy-indeed": "bg-indigo-100 text-indigo-700 border-indigo-200",
+  "jobspy-google": "bg-red-100 text-red-700 border-red-200",
 };
 
 const JOB_TYPE_LABELS: Record<string, string> = {
@@ -26,11 +31,19 @@ const JOB_TYPE_LABELS: Record<string, string> = {
   praktikum: "Praktikum",
 };
 
-export default function JobCard({ job, statusColor }: JobCardProps) {
+const STATUS_LABELS: Record<string, string> = {
+  new: "Neu",
+  shortlisted: "Vorgemerkt",
+  applied: "Beworben",
+  rejected: "Abgelehnt",
+};
+
+export default function JobCard({ job, statusColor, hasResume }: JobCardProps) {
   const [isPending, startTransition] = useTransition();
   const [investigating, setInvestigating] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [matching, setMatching] = useState(false);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [application, setApplication] = useState<{
     tailoredCV: string;
@@ -48,7 +61,7 @@ export default function JobCard({ job, statusColor }: JobCardProps) {
       if (result.success) {
         router.refresh();
       } else {
-        alert(result.error || "Investigation failed");
+        alert(result.error || "Analyse fehlgeschlagen");
       }
 
       setInvestigating(false);
@@ -65,10 +78,26 @@ export default function JobCard({ job, statusColor }: JobCardProps) {
         setApplication(result.application);
         setShowApplicationModal(true);
       } else {
-        alert(result.error || "Application generation failed");
+        alert(result.error || "Bewerbungserstellung fehlgeschlagen");
       }
 
       setGenerating(false);
+    });
+  };
+
+  const handleMatch = async () => {
+    setMatching(true);
+
+    startTransition(async () => {
+      const result = await matchJobWithResume(job.id);
+
+      if (result.success) {
+        router.refresh();
+      } else {
+        alert(result.error || "Matching fehlgeschlagen");
+      }
+
+      setMatching(false);
     });
   };
 
@@ -81,6 +110,13 @@ export default function JobCard({ job, statusColor }: JobCardProps) {
   } | null;
 
   const hasReport = report && report.redFlagScore !== undefined;
+
+  const matchScore = job.matchScore as {
+    score: number;
+    matchedSkills: string[];
+    missingSkills: string[];
+    recommendations: string[];
+  } | null;
 
   return (
     <>
@@ -96,20 +132,25 @@ export default function JobCard({ job, statusColor }: JobCardProps) {
                 <p className="text-gray-600 font-medium">{job.company}</p>
               </div>
 
-              {/* Red Flag Badge */}
-              {hasReport && report.redFlagScore !== undefined && (
-                <div
-                  className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-semibold ${
-                    report.redFlagScore >= 7
-                      ? "bg-black text-white"
-                      : report.redFlagScore >= 4
-                      ? "bg-gray-300 text-gray-800"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {report.redFlagScore}/10
-                </div>
-              )}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Match Badge */}
+                {matchScore && <MatchBadge matchScore={matchScore} />}
+
+                {/* Red Flag Badge */}
+                {hasReport && report.redFlagScore !== undefined && (
+                  <div
+                    className={`px-3 py-1 rounded-lg text-sm font-semibold ${
+                      report.redFlagScore >= 7
+                        ? "bg-black text-white"
+                        : report.redFlagScore >= 4
+                        ? "bg-gray-300 text-gray-800"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {report.redFlagScore}/10
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Info Badges */}
@@ -164,7 +205,7 @@ export default function JobCard({ job, statusColor }: JobCardProps) {
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-semibold text-black">
-                    Investigation Report
+                    Analyse-Bericht
                   </h4>
                   <button
                     onClick={() => setShowReport(!showReport)}
@@ -176,7 +217,7 @@ export default function JobCard({ job, statusColor }: JobCardProps) {
 
                 <div className="text-sm space-y-2">
                   <div className="text-gray-700">
-                    Sentiment: <span className="font-semibold text-black">{report.sentiment}</span>
+                    Stimmung: <span className="font-semibold text-black">{report.sentiment}</span>
                   </div>
 
                   {showReport && (
@@ -184,7 +225,7 @@ export default function JobCard({ job, statusColor }: JobCardProps) {
                       {report.redFlags && report.redFlags.length > 0 && (
                         <div>
                           <div className="text-black font-semibold mb-2">
-                            Red Flags:
+                            Warnzeichen:
                           </div>
                           <ul className="list-disc list-inside text-gray-600 space-y-1 ml-1 text-sm">
                             {report.redFlags.map((flag, idx) => (
@@ -251,6 +292,16 @@ export default function JobCard({ job, statusColor }: JobCardProps) {
                 {investigating ? "Analysiert..." : hasReport ? "Erneut analysieren" : "Analysieren"}
               </button>
 
+              {hasResume && !matchScore && (
+                <button
+                  onClick={handleMatch}
+                  disabled={isPending || matching}
+                  className="px-3 py-1.5 bg-accent-light/30 hover:bg-accent-light/50 border border-accent text-primary text-xs font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {matching ? "Matcht..." : "Matching"}
+                </button>
+              )}
+
               {hasReport && (
                 <button
                   onClick={handleGenerateApplication}
@@ -268,7 +319,7 @@ export default function JobCard({ job, statusColor }: JobCardProps) {
             <span
               className={`inline-flex px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider border ${statusColor}`}
             >
-              {job.status}
+              {STATUS_LABELS[job.status] || job.status}
             </span>
           </div>
         </div>

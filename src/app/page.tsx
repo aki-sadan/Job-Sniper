@@ -1,12 +1,14 @@
-import { getAllJobs } from "./actions";
+import { getAllJobs, getResume } from "./actions";
 import HuntButton from "@/components/HuntButton";
 import JobsList from "@/components/JobsList";
 import ResetButton from "@/components/ResetButton";
+import ResumeUpload from "@/components/ResumeUpload";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const jobs = await getAllJobs();
+  const userResume = await getResume();
 
   return (
     <main className="min-h-screen">
@@ -19,7 +21,7 @@ export default async function Home() {
                 Career Sniper
               </h1>
               <p className="text-primary/70 text-lg">
-                AI-powered job hunting • Multi-source search • Zero cost
+                KI-gestützte Jobsuche • Multi-Quellen-Suche • Kostenlos
               </p>
             </div>
             <ResetButton />
@@ -30,10 +32,15 @@ export default async function Home() {
         <div className="max-w-3xl mx-auto mb-12">
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 border border-border shadow-xl hover:shadow-2xl transition-shadow">
             <h2 className="text-xl font-semibold text-primary mb-6">
-              Search Jobs
+              Jobs suchen
             </h2>
             <HuntButton />
           </div>
+        </div>
+
+        {/* Lebenslauf-Upload */}
+        <div className="max-w-3xl mx-auto mb-12">
+          <ResumeUpload initialResume={userResume} />
         </div>
 
         {/* Stats Grid mit Grün-Akzenten */}
@@ -43,35 +50,35 @@ export default async function Home() {
               <div className="text-4xl font-bold text-primary mb-1">
                 {jobs.length}
               </div>
-              <div className="text-sm text-primary/60 uppercase tracking-wide">Total</div>
+              <div className="text-sm text-primary/60 uppercase tracking-wide">Gesamt</div>
             </div>
 
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border hover:border-accent transition-all hover:shadow-lg">
               <div className="text-4xl font-bold text-primary mb-1">
                 {jobs.filter((j) => j.status === "new").length}
               </div>
-              <div className="text-sm text-primary/60 uppercase tracking-wide">New</div>
+              <div className="text-sm text-primary/60 uppercase tracking-wide">Neu</div>
             </div>
 
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border hover:border-accent transition-all hover:shadow-lg">
               <div className="text-4xl font-bold text-primary mb-1">
                 {jobs.filter((j) => j.status === "shortlisted").length}
               </div>
-              <div className="text-sm text-primary/60 uppercase tracking-wide">Shortlisted</div>
+              <div className="text-sm text-primary/60 uppercase tracking-wide">Vorgemerkt</div>
             </div>
 
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border hover:border-accent transition-all hover:shadow-lg">
               <div className="text-4xl font-bold text-primary mb-1">
                 {jobs.filter((j) => j.status === "applied").length}
               </div>
-              <div className="text-sm text-primary/60 uppercase tracking-wide">Applied</div>
+              <div className="text-sm text-primary/60 uppercase tracking-wide">Beworben</div>
             </div>
           </div>
         </div>
 
         {/* Jobs List */}
         <div className="max-w-6xl mx-auto">
-          <JobsList jobs={jobs} />
+          <JobsList jobs={jobs} hasResume={!!userResume} />
         </div>
       </div>
     </main>
