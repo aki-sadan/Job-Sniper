@@ -1,5 +1,3 @@
-import { google } from "@ai-sdk/google";
-import { generateText } from "ai";
 import { callOllama, getOllamaModel } from "./ollama-client";
 
 export interface MatchResult {
@@ -9,30 +7,9 @@ export interface MatchResult {
   recommendations: string[];
 }
 
-async function generateWithFallback(prompt: string): Promise<string> {
-  // Ollama zuerst (KOSTENLOS!)
-  try {
-    const model = getOllamaModel();
-    return await callOllama(model, prompt);
-  } catch {
-    // Fallback zu Gemini
-  }
-
-  try {
-    const result = await generateText({
-      model: google("gemini-1.5-flash-latest"),
-      prompt,
-      temperature: 0.3,
-    });
-    return result.text;
-  } catch {
-    const result = await generateText({
-      model: google("gemini-1.5-flash-8b-latest"),
-      prompt,
-      temperature: 0.3,
-    });
-    return result.text;
-  }
+async function generateWithOllama(prompt: string): Promise<string> {
+  const model = getOllamaModel();
+  return await callOllama(model, prompt);
 }
 
 export async function matchResumeToJob(
@@ -75,7 +52,7 @@ Antworte in diesem exakten JSON-Format:
   "recommendations": ["empfehlung1", "empfehlung2", ...]
 }`;
 
-    const responseText = await generateWithFallback(prompt);
+    const responseText = await generateWithOllama(prompt);
 
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
@@ -110,7 +87,7 @@ ${resumeContent}
 Antworte NUR mit einem JSON-Array von Skills, z.B.:
 ["Python", "JavaScript", "Projektmanagement", "Teamführung", ...]`;
 
-    const responseText = await generateWithFallback(prompt);
+    const responseText = await generateWithOllama(prompt);
 
     const jsonMatch = responseText.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {

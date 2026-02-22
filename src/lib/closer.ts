@@ -1,5 +1,3 @@
-import { google } from "@ai-sdk/google";
-import { generateText } from "ai";
 import fs from "fs/promises";
 import path from "path";
 import { callOllama, getOllamaModel } from "./ollama-client";
@@ -10,35 +8,10 @@ interface ApplicationPackage {
   emailDraft: string;
 }
 
-// Try AI models with fallback (Ollama first, then Gemini)
-async function generateWithFallback(prompt: string, temperature: number = 0.5): Promise<string> {
-  // Try Ollama first (FREE!)
-  try {
-    const model = getOllamaModel();
-    console.log(`🤖 Using ${model} (Local)...`);
-    return await callOllama(model, prompt);
-  } catch {
-    console.log("⚠️  Ollama unavailable, falling back to Gemini...");
-  }
-
-  // Fallback to Gemini
-  try {
-    const result = await generateText({
-      model: google("gemini-1.5-flash-latest"),
-      prompt,
-      temperature,
-    });
-    return result.text;
-  } catch {
-    // Try smaller Gemini model
-    console.log("⚠️  Trying Gemini Flash 8B...");
-    const result = await generateText({
-      model: google("gemini-1.5-flash-8b-latest"),
-      prompt,
-      temperature,
-    });
-    return result.text;
-  }
+async function generateWithOllama(prompt: string): Promise<string> {
+  const model = getOllamaModel();
+  console.log(`🤖 Using ${model} (Local)...`);
+  return await callOllama(model, prompt);
 }
 
 export async function generateApplication(
@@ -110,7 +83,7 @@ AUFGABE:
 
 Gib NUR den angepassten Lebenslauf im Markdown-Format zurück, fertig zur Verwendung.`;
 
-    const tailoredCV = await generateWithFallback(cvPrompt, 0.4);
+    const tailoredCV = await generateWithOllama(cvPrompt);
 
     console.log("✅ Tailored CV generated");
 
@@ -144,7 +117,7 @@ Format:
 
 Gib NUR den Anschreiben-Text zurück.`;
 
-    const coverLetter = await generateWithFallback(coverLetterPrompt, 0.5);
+    const coverLetter = await generateWithOllama(coverLetterPrompt);
 
     console.log("✅ Cover letter generated");
 
@@ -177,7 +150,7 @@ Betreff: [Deine Betreffzeile]
 
 Gib NUR die E-Mail im obigen Format zurück.`;
 
-    const emailDraft = await generateWithFallback(emailPrompt, 0.5);
+    const emailDraft = await generateWithOllama(emailPrompt);
 
     console.log("✅ Email draft generated");
 

@@ -1,5 +1,3 @@
-import { google } from "@ai-sdk/google";
-import { generateText } from "ai";
 import { callOllama, getOllamaModel } from "./ollama-client";
 
 interface DetectiveReport {
@@ -10,23 +8,7 @@ interface DetectiveReport {
   culturalInsights: string[];
 }
 
-// List of models to try in order (fallback strategy)
-// Ollama first (FREE!), then Google Gemini as backup
-interface ModelConfig {
-  provider: "ollama" | "google";
-  name: string;
-  displayName: string;
-}
-
-const AI_MODELS: ModelConfig[] = [
-  { provider: "ollama", name: getOllamaModel(), displayName: `${getOllamaModel()} (Local)` },
-  { provider: "ollama", name: "llama3:latest", displayName: "Llama 3 (Local)" },
-  { provider: "google", name: "gemini-1.5-flash-latest", displayName: "Gemini 1.5 Flash" },
-  { provider: "google", name: "gemini-1.5-flash-8b-latest", displayName: "Gemini 1.5 Flash 8B" },
-];
-
-// Simplified Detective - uses AI without web scraping
-// In production, you could add actual web scraping here
+// Simplified Detective - uses Ollama for AI analysis
 export async function investigateCompanySimple(
   company: string,
   jobTitle: string
@@ -34,8 +16,6 @@ export async function investigateCompanySimple(
   try {
     console.log(`🕵️ Detective Agent: Investigating ${company}...`);
 
-    // Use AI to analyze based on general knowledge
-    // In production, you would add web scraping results here
     const analysisPrompt = `Du bist ein Karriereberater, der ein Unternehmen für einen Jobsuchenden analysiert. Antworte auf Deutsch.
 
 Unternehmen: ${company}
@@ -65,52 +45,21 @@ Antworte in diesem exakten JSON-Format:
   "culturalInsights": ["einblick1", "einblick2", ...]
 }`;
 
-    // Try models in order until one works
     let analysisText: string | null = null;
-    for (const modelConfig of AI_MODELS) {
-      try {
-        console.log(`🤖 Trying ${modelConfig.displayName}...`);
+    const model = getOllamaModel();
 
-        if (modelConfig.provider === "ollama") {
-          // Use native Ollama API
-          analysisText = await callOllama(modelConfig.name, analysisPrompt);
-        } else {
-          // Use Google Gemini via AI SDK
-          const result = await generateText({
-            model: google(modelConfig.name),
-            prompt: analysisPrompt,
-            temperature: 0.5,
-          });
-          analysisText = result.text;
-        }
-
-        console.log(`✅ Success with ${modelConfig.displayName}`);
-        break; // Success! Exit loop
-      } catch (error: unknown) {
-        const errMsg = error instanceof Error ? error.message : String(error);
-        const errCode = (error as { statusCode?: number })?.statusCode;
-        const isQuotaError = errMsg.includes("quota") || errCode === 429;
-        const isConnectionError =
-          errMsg.includes("ECONNREFUSED") ||
-          errMsg.includes("fetch failed") ||
-          errMsg.includes("Ollama API error");
-
-        if (isQuotaError) {
-          console.log(`⚠️  Quota exceeded for ${modelConfig.displayName}, trying next model...`);
-          continue;
-        } else if (isConnectionError && modelConfig.provider === "ollama") {
-          console.log(`⚠️  Ollama not reachable, trying next model...`);
-          continue;
-        } else {
-          console.log(`⚠️  Error with ${modelConfig.displayName}: ${errMsg}`);
-          continue;
-        }
-      }
+    try {
+      console.log(`🤖 Using ${model} (Local)...`);
+      analysisText = await callOllama(model, analysisPrompt);
+      console.log(`✅ Success with ${model}`);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.log(`⚠️  Ollama error: ${errMsg}`);
     }
 
-    // If all AI models failed, use fallback
+    // If Ollama failed, use fallback
     if (!analysisText) {
-      console.log("⚠️  All AI models exhausted, using fallback analysis...");
+      console.log("⚠️  Ollama not available, using fallback analysis...");
       return getFallbackReport(company, jobTitle);
     }
 
