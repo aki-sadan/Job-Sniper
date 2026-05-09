@@ -13,7 +13,7 @@ Das System wurde erfolgreich auf **Google Gemini AI** umgestellt!
 ## Dein API Key
 
 ```bash
-GOOGLE_GENERATIVE_AI_API_KEY=AIzaSyDE__xKP0mqOwdoHtISpm3NGDLDBcYFS_I
+
 ```
 
 Der Key ist bereits in der `.env` Datei gespeichert und wird verwendet!
